@@ -1,0 +1,57 @@
+// Description: Bspline zelfgemaakt
+
+//Image Types
+(FixedInternalImagePixelType "float")
+(FixedImageDimension 3)
+(MovingInternalImagePixelType "float")
+(MovingImageDimension 3)
+(UseDirectionCosines "true")
+
+// Registration
+(Registration "MultiResolutionRegistration")
+
+//Pyramid
+(FixedImagePyramid "FixedSmoothingImagePyramid")
+(MovingImagePyramid "MovingSmoothingImagePyramid")
+(NumberOfResolutions 3)
+
+//Image sampler
+(ImageSampler "RandomCoordinate")
+(NumberOfSpatialSamples 3000)
+(NewSamplesEveryIteration "true")
+
+//Metric
+(Metric "AdvancedMattesMutualInformation")
+(NumberofHistogramBins 32)
+
+//Interpolator
+(Interpolator "LinearInterpolator")
+
+// ResampleInterpolator
+(ResampleInterpolator "FinalBSplineInterpolator")
+(FinalBSplineInterpolationOrder 3)
+
+//Resampler
+(Resampler "DefaultResampler")
+
+//Transform
+(Transform "RecursiveBSplineTransform")
+(FinalGridSpacingInVoxels 32.0 32.0 32.0)
+
+//Optimizer
+(Optimizer "AdaptiveStochasticGradientDescent")
+//(ASGDParameterEstimationMethod "DisplacementDistribution")
+
+//Results
+(WriteResultImage "true")
+(WriteResultImageAfterEachResolution "false") 
+(WriteTransformParametersEachIteration "false")
+
+//Maximum number of iterations in each resolution level:
+(MaximumNumberOfIterations 2000) 
+
+//Mask
+(ErodeMask "false")
+
+
+

@@ -1,0 +1,87 @@
+// Description: affine
+
+//** The internal pixel type, used for internal computations
+// Leave to float in general.
+(FixedInternalImagePixelType "float")
+(MovingInternalImagePixelType "float")
+
+//** The dimensions of the fixed and moving image
+(FixedImageDimension 3)
+(MovingImageDimension 3)
+
+//** Registration setup
+(Registration "MultiResolutionRegistration")
+(NumberOfResolutions 3)
+(FixedImagePyramid "FixedSmoothingImagePyramid")
+(MovingImagePyramid "MovingSmoothingImagePyramid")
+//(ImagePyramidSchedule 4 4 2 2 2 1 1 1 1)
+
+//** Optimizer
+(Optimizer "AdaptiveStochasticGradientDescent")
+(MaximumNumberOfIterations 300 300 600)
+(ASGDParameterEstimationMethod "DisplacementDistribution")
+
+//(Optimizer "StandardGradientDescent")
+//(SP_alpha 0.6)
+//(SP_A 50)
+//(SP_a 100)
+
+//** Transformation
+(Transform "AffineTransform")
+//(Transform "EulerTransform")
+(ErodeMask "false")
+(AutomaticScalesEstimation "true")
+(AutomaticTransformInitialization "false")
+
+//** Metric
+(Metric "AdvancedMattesMutualInformation")
+(NumberOfHistogramBins 32)
+
+//** Sampler
+(ImageSampler "RandomCoordinate")
+(FixedImageBSplineInterpolationOrder 1 )
+//(UseRandomSampleRegion "true")
+//(SampleRegionSize 90.0 111.0 29.0 )
+(NumberOfSpatialSamples 3000)
+(NewSamplesEveryIteration "true")
+
+//** Interpolator
+(Interpolator "LinearInterpolator")
+
+(ResampleInterpolator "FinalBSplineInterpolator")
+(FinalBSplineInterpolationOrder 3)
+(Resampler "DefaultResampler")
+
+
+
+
+(HowToCombineTransforms "Compose")
+
+(WriteResultImage "true")
+(WriteResultImageAfterEachResolution "false") 
+(WriteTransformParametersEachIteration "false")
+(WriteTransformParametersEachResolution "true")
+(ResultImageFormat "mhd")
+
+//Maximum number of iterations in each resolution level:
+//(MaximumNumberOfIterations 2000)
+
+//Number of grey level bins in each resolution level:
+(FixedKernelBSplineOrder 3)
+(MovingKernelBSplineOrder 3)
+(FixedLimitRangeRatio 0.0)
+(MovingLimitRangeRatio 0.0)
+
+
+//Default pixel value for pixels that come from outside the picture:
+(DefaultPixelValue 0)
+
+
+(ShowExactMetricValue "false")
+(CheckNumberOfSamples "true")
+(UseMultiThreadingForMetrics "true")
+(NumberOfFixedHistogramBins 32)
+(NumberOfMovingHistogramBins 32)
+(FiniteDifferenceDerivative "false")
+(MaximumNumberOfSamplingAttempts 0)
+(UseDirectionCosines "true")
