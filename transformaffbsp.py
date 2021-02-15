@@ -64,7 +64,7 @@ intermediate_result_path = os.path.join('linear_results', 'result.0.mhd')
 el.register(
     fixed_image=unseen_image_path,
     moving_image=intermediate_result_path,
-    parameters=[os.path.join('parameterfiles', 'parameters_bspline142.txt')],
+    parameters=[os.path.join('parameterfiles', 'parameters_bspline.txt')],
     output_dir=r'nonlinear_results')
 
 final_result_path = os.path.join('nonlinear_results', 'result.0.mhd')
