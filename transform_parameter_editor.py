@@ -65,7 +65,7 @@ class TransformParameterFileEditor(object):
         # Result image format
         self.params_dict['ResultImagePixelType'] = ' "' + 'float' + '"'
         # Interpolation order to 0 for binary labels
-        self.params_dict['FinalBSpineInterpolatorOrder'] = ' 0'
+        self.params_dict['FinalBSplineInterpolationOrder'] = ' 0'
 
     def _writer_parameters_to_file(self):
         """
