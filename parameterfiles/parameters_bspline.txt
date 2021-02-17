@@ -1,57 +1,78 @@
-// Description: Bspline zelfgemaakt
+// Description: Bspline
 
-//Image Types
+//** The internal pixel type, used for internal computations
+// Leave to float in general.
 (FixedInternalImagePixelType "float")
-(FixedImageDimension 3)
 (MovingInternalImagePixelType "float")
+
+//** The dimensions of the fixed and moving image
+(FixedImageDimension 3)
 (MovingImageDimension 3)
-(UseDirectionCosines "true")
 
-// Registration
-(Registration "MultiResolutionRegistration")
-
-//Pyramid
+//** Registration setup
+(Registration "MultiMetricMultiResolutionRegistration")
+(NumberOfResolutions 4)
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
-(NumberOfResolutions 3)
 
-//Image sampler
-(ImageSampler "RandomCoordinate")
-(NumberOfSpatialSamples 3000)
-(NewSamplesEveryIteration "true")
-
-//Metric
-(Metric "AdvancedMattesMutualInformation")
-(NumberofHistogramBins 32)
-
-//Interpolator
-(Interpolator "LinearInterpolator")
-
-// ResampleInterpolator
-(ResampleInterpolator "FinalBSplineInterpolator")
-(FinalBSplineInterpolationOrder 3)
-
-//Resampler
-(Resampler "DefaultResampler")
-
-//Transform
-(Transform "RecursiveBSplineTransform")
-(FinalGridSpacingInVoxels 32.0 32.0 32.0)
-
-//Optimizer
+//** Optimizer
 (Optimizer "AdaptiveStochasticGradientDescent")
+(MaximumNumberOfIterations 2000)
 //(ASGDParameterEstimationMethod "DisplacementDistribution")
 
-//Results
+//** Transformation
+(Transform "RecursiveBSplineTransform")
+(FinalGridSpacingInVoxels 16.0 16.0 16.0)
+(ErodeMask "false")
+(AutomaticScalesEstimation "true")
+
+//** Metric
+(Metric "AdvancedMattesMutualInformation" "TransformBendingEnergyPenalty")
+(Metric0Weight 1)
+(Metric1Weight 50)
+(NumberOfHistogramBins 32)
+
+//** Sampler
+(ImageSampler "RandomCoordinate")
+(FixedImageBSplineInterpolationOrder 1 )
+//(UseRandomSampleRegion "true")
+//(SampleRegionSize 90.0 111.0 29.0 )
+(NumberOfSpatialSamples 2000)
+(NewSamplesEveryIteration "true")
+
+//** Interpolator
+(Interpolator "LinearInterpolator")
+
+(ResampleInterpolator "FinalBSplineInterpolator")
+(FinalBSplineInterpolationOrder 3)
+(Resampler "DefaultResampler")
+
+
+(HowToCombineTransforms "Compose")
+
 (WriteResultImage "true")
 (WriteResultImageAfterEachResolution "false") 
 (WriteTransformParametersEachIteration "false")
+(WriteTransformParametersEachResolution "false")
+(ResultImageFormat "mhd")
 
-//Maximum number of iterations in each resolution level:
-(MaximumNumberOfIterations 2000) 
+//Number of grey level bins in each resolution level:
+(FixedKernelBSplineOrder 3)
+(MovingKernelBSplineOrder 3)
+(FixedLimitRangeRatio 0.0)
+(MovingLimitRangeRatio 0.0)
 
-//Mask
-(ErodeMask "false")
 
+//Default pixel value for pixels that come from outside the picture:
+(DefaultPixelValue 0)
 
-
+(ShowMetricValues "true")
+(ShowExactMetricValue "false")
+(CheckNumberOfSamples "true")
+(UseMultiThreadingForMetrics "true")
+(NumberOfFixedHistogramBins 32)
+(NumberOfMovingHistogramBins 32)
+(FiniteDifferenceDerivative "false")
+(MaximumNumberOfSamplingAttempts 0)
+(UseDirectionCosines "true")
+(UseFastAndLowMemoryVersion "true")
