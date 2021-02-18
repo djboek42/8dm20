@@ -6,12 +6,14 @@ Created on Thu Feb 18 13:07:11 2021
 """
 
 from metrics import dice_coef, sensitivity, specificity
-from Combination_methods import majority_voting, global_weighted_voting
+from Combination_methods import majority_voting, global_weighted_voting, local_weighted_voting
+from time import time
 
 import os 
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 #%% Example combining atlases
 #specify data path & load filenames
@@ -22,22 +24,38 @@ patients = os.listdir(data_path)
 masks = [sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_path, patient, "prostaat.mhd"))) for patient in patients]
 images = [sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_path, patient, "mr_bffe.mhd"))) for patient in patients if patient.find("p1")>-1]
 
-new_mask=masks.pop()
-new_image=images.pop()
+#specify unknown image & mask
+unknown_mask=masks.pop()
+unknown_image=images.pop()
 
+#calculate mean of masks
 mask_mean = np.sum(masks, axis=0)/np.shape(masks)[0] #only used to visualize the mean mask
 
+#calculate majority voting combination of masks
+st = time()
 m1 = majority_voting(masks, 0.5)
-DSC_m1, SNS_m1, SPC_m1 = dice_coef(new_mask, m1), sensitivity(new_mask, m1), specificity(new_mask, m1)
+d_m1 = st - time()
 
-w1 = global_weighted_voting(images, masks, new_image, 0.5)
-DSC_w1, SNS_w1, SPC_w1 = dice_coef(new_mask, w1), sensitivity(new_mask, w1), specificity(new_mask, w1)
+DSC_m1, SNS_m1, SPC_m1 = dice_coef(unknown_mask, m1), sensitivity(unknown_mask, m1), specificity(unknown_mask, m1)
 
-#%%
-# plots for illustration
+#calculate global weighted voting combination of masks
+st = time()
+w1 = global_weighted_voting(images, masks, unknown_image, 0.5)
+d_w1 = st - time()
+
+DSC_w1, SNS_w1, SPC_w1 = dice_coef(unknown_mask, w1), sensitivity(unknown_mask, w1), specificity(unknown_mask, w1)
+
+#calculate local weighted voting combination of masks
+st = time()
+g1 = local_weighted_voting(images, masks, unknown_image, 0.5, max_idx = 50000)
+d_g1 = st - time()
+
+DSC_g1, SNS_g1, SPC_g1 = dice_coef(unknown_mask, g1), sensitivity(unknown_mask, g1), specificity(unknown_mask, g1)
+
+#%% plots for illustration
 idx = 40
 fig, ax = plt.subplots(1, 4, figsize=(10,5))
-ax[0].imshow(new_mask[idx])
+ax[0].imshow(unknown_mask[idx])
 ax[0].set_title('Ground truth')
 ax[1].imshow(mask_mean[idx]) #plot that shows the voting in the mean mask
 ax[1].set_title('Mean mask')
