@@ -30,7 +30,7 @@ def MeanSurfaceDistance(maskA, maskM):
     # voxelsize die uit het artikel van Pluim komt
     sampling = [0.55, 0.55, 3]
 
-    dta = morphology.distance_transform_edt(~input1_border, sampling)
+    dta = morphology.distance_transform_edt(~S, sampling)
     dtb = morphology.distance_transform_edt(~Sprime, sampling)
 
     sds = np.concatenate([np.ravel(dta[Sprime != 0]), np.ravel(dtb[S != 0])])
