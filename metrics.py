@@ -8,6 +8,26 @@ import numpy as np
 import os 
 import SimpleITK as sitk
 
+def mutual_information(y_true, y_pred):
+    """
+    DESCRIPTION: Mutual information (MI) metric
+    ----------
+    INPUTS:
+    y_true: numpy array, containing the fixed image
+    y_pred: numpy array, containing the moved image
+    -------
+    OUTPUTS:
+    the MI
+    """
+    hist_2d, _, _ = np.histogram2d(y_true.ravel(),y_pred.ravel())
+    pxy = hist_2d / float(np.sum(hist_2d))
+    px = np.sum(pxy, axis=1)
+    py = np.sum(pxy, axis=0) 
+    px_py = px[:, None] * py[None, :] 
+
+    nzs = pxy > 0 
+    return np.sum(pxy[nzs] * np.log(pxy[nzs] / px_py[nzs]))
+
 def dice_coef(y_true, y_pred, smooth = 0.0):
     """
     DESCRIPTION: Dice similarity coefficient (DSC) metric: 2*TP / (2*TP + FP + FN)
@@ -59,19 +79,5 @@ def specificity(y_true, y_pred, smooth = 0.0):
     intersection = np.sum(y_true_f * y_pred_f)
     return (intersection + smooth) / (np.sum(y_true_f) + smooth)
 
-#%% Example 
-#
-# #specify data path & load filenames
-# data_path = r"C:\Users\20164798\OneDrive - TU Eindhoven\UNI\ME 1\Q3\CS of MI\Image Registration Project\Data"
-# patients = os.listdir(data_path)
-#
-# #load images and masks
-# masks = [sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_path, patient, "prostaat.mhd"))) for patient in patients]
-#
-# DSC = dice_coef(masks[0], masks[1])
-# SNS = sensitivity(masks[0], masks[1])
-# SPC = specificity(masks[0], masks[1])
-#
-# print(DSC, SNS, SPC)
 
 
