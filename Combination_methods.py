@@ -38,7 +38,7 @@ def global_weighted_voting(images, masks, new_image, threshold):
     """
     new_images = [new_image]*len(images)
     
-    #uncomment following lines for only taking in account prostate regions for similarity metric
+    # uncomment following lines for only taking in account prostate regions for similarity metric
     # images = [mask*image for mask, image in zip(masks, images)]
     # new_images = [mask*new_image for mask in masks]
     
@@ -84,11 +84,9 @@ def local_weighted_voting(images, masks, unknown_image, threshold, box_idx = Non
         start_idx = i
         end_idx = i + max_idx
         if end_idx > len(idxs): end_idx = len(idxs)
-        print(start_idx, end_idx)
+        print(f"At index {i}/{len(idxs)}")
         
-        #if box_idx is None:
         box_idx = get_box_idxs(idxs[start_idx:end_idx], images[0].shape)
-            #with open('box_idx.pkl', 'wb') as f: pickle.dump(box_idx, f)
     
         new_weights = np.array(list(map(get_box_mi, images, [unknown_image]*len(images), [idxs[start_idx:end_idx]]*len(images), [box_idx]*len(images))))
         weights = np.hstack((weights, new_weights))
