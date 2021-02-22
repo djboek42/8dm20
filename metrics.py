@@ -4,10 +4,26 @@ Created on Thu Feb 11 16:19:17 2021
 
 @author: 20164798
 """
+
+import math
 import numpy as np
-import os 
-import SimpleITK as sitk
 from scipy.ndimage import morphology
+
+def normalization(images):
+    """
+    DESCRIPTION: Z-score normalization for images
+    ----------
+    INPUTS:
+    Images: list of numpy arrays, containing the images to normalize
+    -------
+    OUTPUTS:
+    the normalized images
+    """
+    mean = np.mean(np.stack(images), axis=(1, 2, 3), keepdims=True)
+    std = np.std(np.stack(images), axis=(1, 2, 3), keepdims=True)
+    images -= mean
+    images /= std
+    return list(images)
 
 def mutual_information(y_true, y_pred):
     """
@@ -28,6 +44,11 @@ def mutual_information(y_true, y_pred):
 
     nzs = pxy > 0 
     return np.sum(pxy[nzs] * np.log(pxy[nzs] / px_py[nzs]))
+
+def rmse(im1, im2):
+    """Calculates the root mean square error (RSME) between two images""" 
+    errors = np.abs(im1-im2) 
+    return math.sqrt(np.mean(np.square(errors)))
 
 def dice_coef(y_true, y_pred, smooth = 0.0):
     """
@@ -101,7 +122,7 @@ def MeanSurfaceDistance(maskA, maskM):
     conn = morphology.generate_binary_structure(input_1.ndim, 1)
 
     S = (input_1.astype('uint8') - (morphology.binary_erosion(input_1, conn).astype('uint8'))).astype('bool')
-    Sprime = (input_2.astype('uint8') - (morphology.binary_erosion(input_2, conn))).astype('uint8')
+    Sprime = (input_2.astype('uint8') - (morphology.binary_erosion(input_2, conn).astype('uint8'))).astype('bool')
 
     # voxelsize die uit het artikel van Pluim komt
     sampling = [0.55, 0.55, 3]
