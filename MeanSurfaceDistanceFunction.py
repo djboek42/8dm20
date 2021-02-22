@@ -4,6 +4,7 @@ import os
 import SimpleITK as sitk
 
 
+
 def MeanSurfaceDistance(maskA, maskM):
     """
     DESCRIPTION: Calculates mean surface distance (MSD) between the outer edges of two surfaces.
@@ -24,8 +25,8 @@ def MeanSurfaceDistance(maskA, maskM):
 
     conn = morphology.generate_binary_structure(input_1.ndim, 1)
 
-    S = input_1 - morphology.binary_erosion(input_1, conn)
-    Sprime = input_2 - morphology.binary_erosion(input_2, conn)
+    S = (input_1.astype('uint8') - (morphology.binary_erosion(input_1, conn).astype('uint8'))).astype('bool')
+    Sprime = (input_2.astype('uint8') - (morphology.binary_erosion(input_2, conn).astype('uint8'))).astype('bool')
 
     # voxelsize die uit het artikel van Pluim komt
     sampling = [0.55, 0.55, 3]
