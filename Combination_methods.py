@@ -22,7 +22,7 @@ def majority_voting(masks, threshold=0.5):
     the resulting mask
     """
     mask_mean = np.sum(masks, axis=0)/np.shape(masks)[0] #sum all masks and divide by number of masks
-    return mask_mean > threshold #apply threshold to average mask
+    return mask_mean #> threshold #apply threshold to average mask
  
 def global_weighted_voting(images, masks, new_image, threshold, metric = mutual_information, only_mask = False, p = 1):
     """
@@ -50,7 +50,7 @@ def global_weighted_voting(images, masks, new_image, threshold, metric = mutual_
     weights /= np.max(weights) #optional, normalize the weights
     weighted_masks = [mask*weight for mask, weight in zip(masks, weights)]
     mask_mean=np.sum(weighted_masks, axis=0)/np.shape(weighted_masks)[0]
-    return mask_mean > threshold
+    return mask_mean #> threshold
  
 def get_box(x, y, z, rad, nr_idx, nr_idxs, idx):
     if nr_idx % 1000 == 0: print(f"get box of idx: {nr_idx}/{nr_idxs}")
@@ -64,7 +64,7 @@ def box_weight(im, im1, nr_idx, nr_idxs, box_idx, metric = mutual_information):
     if nr_idx % 1000 == 0: print(f"get weight of pixels: {nr_idx}/{nr_idxs}, for metric: {metric.__name__}")
     return metric(im[box_idx], im1[box_idx])
 
-def get_box_idxs(idxs, im_shape = (86, 333, 271), box_len = 10):
+def get_box_idxs(idxs, im_shape = (86, 333, 271), box_len = 20):
     z, y, x = im_shape
     rad = box_len//2 
     box_idx = map(get_box, [x]*len(idxs), [y]*len(idxs), [z]*len(idxs), [rad]*len(idxs), list(range(len(idxs))), [len(idxs)]*len(idxs), idxs)
@@ -81,7 +81,7 @@ def new_mask(weights, masks, threshold, idxs1, idxs):
     weights /= np.max(weights)
     weighted_masks = [mask.flatten()[idxs]*weight for mask, weight in zip(masks, weights)]
     mean_weighted_mask = np.sum(weighted_masks, axis=0)/np.shape(weighted_masks)[0]
-    thresholded_mask = mean_weighted_mask > threshold
+    thresholded_mask = mean_weighted_mask #> threshold
     
     new_mask = np.zeros(masks[0].flatten().shape)
     new_mask[idxs1] = 1
