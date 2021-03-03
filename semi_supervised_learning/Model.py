@@ -1,8 +1,8 @@
 from __future__ import print_function
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Concatenate, Conv2D, Conv2DTranspose, Dropout, UpSampling2D, AveragePooling2D
-from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.layers import Input, Concatenate, Conv3D, Conv3DTranspose, Dropout, UpSampling3D, AveragePooling3D
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 
 import numpy as np
@@ -122,10 +122,10 @@ def conv_block(m, dim, shape, acti, norm, do=0):
     n:      the model with the new convolution block added
     """
     
-    n = Conv2D(dim, shape, activation=acti, padding='same')(m)
+    n = Conv3D(dim, shape, activation=acti, padding='same')(m)
     n = norm()(n) if norm and type(norm) != tuple else norm[0](norm[1])(n) if type(norm) == tuple else n
     n = Dropout(do)(n) if do else n
-    n = Conv2D(dim, shape, activation=acti, padding='same')(n)
+    n = Conv3D(dim, shape, activation=acti, padding='same')(n)
     n = norm()(n) if norm and type(norm) != tuple else norm[0](norm[1])(n) if type(norm) == tuple else n
     return n
 
@@ -150,14 +150,14 @@ def level_block_unet(m, dim, shape, depth, inc, acti, norm, do, up):
     
     if depth > 0:
         n = conv_block(m, dim, shape, acti, norm, do)
-        m = AveragePooling2D()(n)
+        m = AveragePooling3D()(n)
         m = level_block_unet(m, int(inc*dim), shape, depth-1, inc, acti, norm, do, up)
         
         if up:
-            m = UpSampling2D()(m)
-            m = Conv2D(dim, 2, activation=acti, padding='same')(m)
+            m = UpSampling3D()(m)
+            m = Conv3D(dim, 2, activation=acti, padding='same')(m)
         else:
-            m = Conv2DTranspose(dim, shape, strides=(2, 2), padding='same')(m)
+            m = Conv3DTranspose(dim, shape, strides=(2, 2, 2), padding='same')(m)
         
         n = Concatenate()([n, m])
         m = conv_block(n, dim, shape, acti, norm)   
@@ -166,7 +166,7 @@ def level_block_unet(m, dim, shape, depth, inc, acti, norm, do, up):
     
     return m
 
-def Unet(img_shape = (96, 96, 1), out_ch=1, start_ch=32, depth=4, inc_rate=2, kernel_size = (3, 3), activation='relu', normalization=None, dropout=0, up = False, compile_model =True, learning_rate = 1e-5):
+def Unet(img_shape = (80, 272, 320, 1), out_ch=1, start_ch=32, depth=4, inc_rate=2, kernel_size = (3, 3, 3), activation='relu', normalization=None, dropout=0, up = False, compile_model =True, learning_rate = 1e-5):
     """
     DESCRIPTION: The U-net model
     ----------
@@ -188,8 +188,11 @@ def Unet(img_shape = (96, 96, 1), out_ch=1, start_ch=32, depth=4, inc_rate=2, ke
     
     i = Input(shape=img_shape)
     o = level_block_unet(i, start_ch, kernel_size, depth, inc_rate, activation, normalization, dropout, up)
-    o = Conv2D(out_ch, (1, 1), activation = 'sigmoid')(o)
+    o = Conv3D(out_ch, (1, 1, 1), activation = 'sigmoid')(o)
     model = Model(inputs=i, outputs=o)
     
     if compile_model: model.compile(optimizer=Adam(lr=learning_rate), loss = dice_coef_loss, metrics=[dice_coef])
     return model
+
+a = Unet()
+
