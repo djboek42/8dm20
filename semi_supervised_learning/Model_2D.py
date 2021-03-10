@@ -3,7 +3,7 @@ from __future__ import print_function
 from tensorflow.keras import backend as K
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.layers import Input, Concatenate, Conv2D, Conv2DTranspose, Dropout, UpSampling2D, MaxPooling2D
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
 
@@ -128,7 +128,7 @@ def Unet(img_shape = (96, 96, 1), out_ch=1, start_ch=32, depth=4, inc_rate=2, ke
     o = Conv2D(out_ch, (1, 1), activation = 'sigmoid')(o)
     model = Model(inputs=i, outputs=o)
     
-    if compile_model: model.compile(optimizer=Adam(lr=learning_rate), loss = dice_coef_loss, metrics=[dice_coef])
+    if compile_model: model.compile(optimizer=SGD(lr=learning_rate, momentum=0.9), loss = dice_coef_loss, metrics=[dice_coef])
     return model
 
 def load_callback_list(save_dir):
@@ -137,3 +137,4 @@ def load_callback_list(save_dir):
     callbacks_list.append(CSVLogger(save_dir + ' log.out', append=True, separator=';'))
     callbacks_list.append(EarlyStopping(monitor = "val_loss", verbose = 1, min_delta = 0.0001, patience = 5, mode = 'auto', restore_best_weights = True))
     return callbacks_list
+
