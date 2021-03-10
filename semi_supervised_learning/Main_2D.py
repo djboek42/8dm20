@@ -7,7 +7,7 @@ from Data_2D import load_data, print_func, save_results
 from sklearn.model_selection import KFold
 from tensorflow.keras import backend as K
 
-# from tensorflow.keras.layers import BatchNormalization, LayerNormalization
+from tensorflow.keras.layers import BatchNormalization #, LayerNormalization
 # from tensorflow_addons.layers import InstanceNormalization, GroupNormalization
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
@@ -62,5 +62,5 @@ def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", mo
     save_results(model_name, dice_per_fold, time_per_fold, False)    
     
 if __name__ == '__main__':
-    result = train_model(save_path=save_path)
+    result = train_model(normalization=BatchNormalization, dropout=0.2, depth=5, save_path=save_path)
     
