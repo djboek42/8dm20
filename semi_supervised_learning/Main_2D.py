@@ -62,5 +62,5 @@ def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", mo
     save_results(model_name, dice_per_fold, time_per_fold, False)    
     
 if __name__ == '__main__':
-    result = train_model(model_name="kazemifar_paper_v1", x_size=320, y_size=256, learning_rate=0.01, normalization=BatchNormalization, dropout=0.2, depth=4, save_path=save_path)
+    result = train_model(model_name="kazemifar_paper_v1", batch_size=16, x_size=320, y_size=256, learning_rate=0.001, normalization=BatchNormalization, dropout=0.2, depth=4, save_path=save_path)
     
