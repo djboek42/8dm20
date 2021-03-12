@@ -7,16 +7,17 @@ from Data_2D import load_data, print_func, save_results
 from sklearn.model_selection import KFold
 from tensorflow.keras import backend as K
 
-from tensorflow.keras.layers import BatchNormalization #, LayerNormalization
+from tensorflow.keras.layers import BatchNormalization#, LayerNormalization
 # from tensorflow_addons.layers import InstanceNormalization, GroupNormalization
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
 # data_path = r"C:\Users\20164798\OneDrive - TU Eindhoven\UNI\ME 1\Q3\CS of MI\Image Registration Project\Data"
+# save_path = r""
 data_path = r"/home/8dm20-7/Data"
 save_path = r"/home/8dm20-7/Results"
 
-def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", model_name="model", save_path = "results", x_size = 320, y_size = 272, num_folds=5, batch_size=32, learning_rate=1e-5, nr_epochs=80, verbosity=1, up=False, start_ch=32, depth=4, inc_rate=2, kernel_size=(3, 3), activation='relu', normalization=None, dropout=0.2):
+def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", model_name="model", save_path = "results", x_size = 320, y_size = 256, num_folds=5, batch_size=32, learning_rate=1e-5, nr_epochs=80, verbosity=1, up=False, start_ch=32, depth=4, inc_rate=2, kernel_size=(3, 3), activation='relu', normalization=None, dropout=0.2):
     
     ##### load data and optional test data #####
     images, masks = load_data(data_path, imgs, msks, x_size, y_size)
@@ -62,5 +63,5 @@ def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", mo
     save_results(model_name, dice_per_fold, time_per_fold, False)    
     
 if __name__ == '__main__':
-    result = train_model(model_name="kazemifar_paper_v1", batch_size=16, x_size=320, y_size=256, learning_rate=0.001, normalization=BatchNormalization, dropout=0.2, depth=4, save_path=save_path)
+    result = train_model(start_ch=16, batch_size=16, learning_rate=0.0001, normalization=BatchNormalization, depth=6, save_path=save_path)
     
