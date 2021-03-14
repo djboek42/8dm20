@@ -1,8 +1,8 @@
 import os
 
 from time import time
-from Model_2D import Unet, load_callback_list
-from Data_2D import load_data, print_func, save_results
+from Model_2D import Unet, load_callback_list, get_generators
+from Data_2D import load_data, print_func, save_results, elastic_deformation
 
 from sklearn.model_selection import KFold
 from tensorflow.keras import backend as K
@@ -12,12 +12,18 @@ from tensorflow.keras.layers import BatchNormalization#, LayerNormalization
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-# data_path = r"C:\Users\20164798\OneDrive - TU Eindhoven\UNI\ME 1\Q3\CS of MI\Image Registration Project\Data"
+# data_path = r"C:\Users\20164798\OneDrive - TU Eindhoven\UNI\ME 1\Q3\CS of MI\Image Registration Project\Data_ML\train"
 # save_path = r""
-data_path = r"/home/8dm20-7/Data"
+data_path = r"/home/8dm20-7/Data/train"
 save_path = r"/home/8dm20-7/Results"
 
-def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", model_name="model", save_path = "results", x_size = 320, y_size = 256, num_folds=5, batch_size=32, learning_rate=1e-5, nr_epochs=80, verbosity=1, up=False, start_ch=32, depth=4, inc_rate=2, kernel_size=(3, 3), activation='relu', normalization=None, dropout=0.2):
+train_data_gen_args = dict(rotation_range=90, width_shift_range=0.1, height_shift_range=0.1,
+                           shear_range=0.2, zoom_range=0.2, horizontal_flip=True, 
+                           vertical_flip=True, preprocessing_function=elastic_deformation)
+
+
+
+def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", model_name="model", save_path = "results", x_size = 320, y_size = 256, num_folds=5, batch_size=32, learning_rate=1e-5, nr_epochs=80, verbosity=1, up=False, start_ch=32, depth=4, inc_rate=2, kernel_size=(3, 3), activation='relu', normalization=None, dropout=0.2, augment_factor=5):
     
     ##### load data and optional test data #####
     images, masks = load_data(data_path, imgs, msks, x_size, y_size)
@@ -34,7 +40,9 @@ def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", mo
         print_func(f'Training for fold {fold_no} (of {num_folds}) ... \nModel name: {model_name}')
         
         ##### divide images and masks into a train and a validation set ######
-        train_im, train_msk, val_im, val_msk = images[train], masks[train], images[val], masks[val]  
+        train_im, train_msk, val_im, val_msk = images[train], masks[train], images[val], masks[val]
+        train_gen = get_generators(train_data_gen_args, train_im, train_msk, batch_size)
+        val_gen = get_generators({}, val_im, val_msk, batch_size)
         
         ##### load model with random initialized weights ######
         model = Unet(**arg_dict_model)
@@ -44,9 +52,9 @@ def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", mo
         callbacks_list = load_callback_list(save_dir)
        
         ##### fit model #####
-        arg_dict_fit = {"x": train_im, "y": train_msk, "validation_data": (val_im, val_msk), "batch_size": batch_size, "epochs": nr_epochs, "verbose": verbosity, "shuffle": True}
+        arg_dict_fit = {"x": train_gen, "validation_data": val_gen, "epochs": nr_epochs, "verbose": verbosity, "callbacks": callbacks_list, "steps_per_epoch": (len(train_im)*augment_factor) // batch_size}
         start_time = time()
-        model.fit(callbacks=callbacks_list, **arg_dict_fit)
+        model.fit(**arg_dict_fit)
         train_time = int(time()-start_time)
                 
         ##### evaluate model #####
@@ -63,5 +71,5 @@ def train_model(data_path=data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", mo
     save_results(model_name, dice_per_fold, time_per_fold, False)    
     
 if __name__ == '__main__':
-    result = train_model(start_ch=16, batch_size=16, learning_rate=0.0001, normalization=BatchNormalization, depth=6, save_path=save_path)
+    result = train_model(model_name="v1", start_ch=16, batch_size=16, learning_rate=0.0001, normalization=BatchNormalization, depth=6, save_path=save_path)
     

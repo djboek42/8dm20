@@ -6,6 +6,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Input, Concatenate, Conv2D, Conv2DTranspose, Dropout, UpSampling2D, AveragePooling2D, MaxPooling2D
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 smooth = 1. #smooth factor used in DSC and Precission metrics
@@ -134,3 +135,17 @@ def load_callback_list(save_dir):
     callbacks_list.append(CSVLogger(save_dir + ' log.out', append=True, separator=';'))
     callbacks_list.append(EarlyStopping(monitor = "val_loss", verbose = 1, min_delta = 0.0001, patience = 5, mode = 'auto', restore_best_weights = True))
     return callbacks_list
+
+def get_generators(data_gen_args, images, masks, batch_size=32):
+    image_datagen = ImageDataGenerator(**data_gen_args)
+    mask_datagen = ImageDataGenerator(**data_gen_args)
+    
+    # Provide the same seed and keyword arguments to the fit and flow methods
+    seed = 1
+    image_datagen.fit(images, augment=True, seed=seed)
+    mask_datagen.fit(masks, augment=True, seed=seed)
+    image_generator = image_datagen.flow(images, batch_size=batch_size, seed=seed)
+    mask_generator = mask_datagen.flow(masks, batch_size=batch_size, seed=seed)
+
+    train_generator = zip(image_generator, mask_generator)
+    return train_generator

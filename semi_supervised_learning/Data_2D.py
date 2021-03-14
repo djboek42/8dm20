@@ -5,6 +5,8 @@ author:
 """
 import os
 import csv
+import elasticdeform
+import random
 
 import numpy as np
 import SimpleITK as sitk
@@ -27,6 +29,11 @@ def normalization(images):
     images -= mean
     images /= std
     return images
+
+def elastic_deformation(image):
+    sigma = random.randint(1, 10)
+    image[:,:,0] = elasticdeform.deform_random_grid(image[:,:,0], sigma=sigma, points=3)
+    return image
 
 def reshape_imgs(imgs, img_x, img_y):
     """
