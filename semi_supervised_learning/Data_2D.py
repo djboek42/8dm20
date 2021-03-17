@@ -55,30 +55,49 @@ def reshape_imgs(imgs, img_x, img_y):
     imgs_p = imgs_p[..., np.newaxis]
     return imgs_p
 
-def load_data(data_path, imgs="mr_bffe.mhd", msks="prostaat.mhd", img_x=333, img_y=271):
+def load_data(data_path, imgs="mr_bffe.mhd", msks=None, img_x=333, img_y=271):
     ##### loading the data to numpy arrays #####
     print_func('Loading Data')
     patients = os.listdir(data_path)
     imgs_train = np.asarray([sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_path, patient, imgs))) for patient in patients if patient.find("p1")>-1])
-    msks_train = np.asarray([sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_path, patient, msks))) for patient in patients if patient.find("p1")>-1])
     
     print_func('store 3D slices as 2D images')
     imgs_train = np.vstack(imgs_train)
-    msks_train = np.vstack(msks_train)
     
     print_func(f"Reshape images to shape {img_x}x{img_y}")
     imgs_train = reshape_imgs(imgs_train, img_x, img_y)
-    msks_train = reshape_imgs(msks_train, img_x, img_y)
     
-    ###### data normalization ##########
     print_func("Data normalization")
     imgs_train = imgs_train.astype('float32')
     imgs_train = normalization(imgs_train)
     
-    msks_train = msks_train.astype('float32')
-    msks_train /= np.max(msks_train)  # scale masks to [0, 1]
+    if msks is not None:
+        print_func("Repeat for masks")
+        msks_train = np.asarray([sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_path, patient, msks))) for patient in patients if patient.find("p1")>-1])
+        msks_train = np.vstack(msks_train)
+        msks_train = reshape_imgs(msks_train, img_x, img_y)
+        msks_train = msks_train.astype('float32')
+        msks_train /= np.max(msks_train)  # scale masks to [0, 1]
+        
+        return imgs_train, msks_train
+    else:
+        return imgs_train
     
-    return imgs_train, msks_train
+def create_semi_supervised_data(unlabelled_images, model, division_rate, division_step):
+    start_idx = division_step*len(unlabelled_images)//division_rate
+    end_idx = (division_step+1)*len(unlabelled_images)//division_rate
+    if len(unlabelled_images)<end_idx: end_idx = len(unlabelled_images)
+    
+    subset = unlabelled_images[start_idx:end_idx]
+    
+    print_func(f"predict for indexes {start_idx}-{end_idx}")
+    predicted_masks = np.empty(subset.shape)
+    
+    for i, image in enumerate(subset):
+        image = np.expand_dims(image, axis=0)
+        predicted_masks[i] = model.predict(image)
+    
+    return subset, predicted_masks > 0.5
 
 def save_results(model_name, dice, time, elab=True, file_total = 'results.csv', file_elab = 'results_elaborate.csv'):
     """
